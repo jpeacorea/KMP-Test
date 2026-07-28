@@ -1,4 +1,4 @@
-package ni.gob.minsa.myapplication.composables.create
+package ni.gob.minsa.myapplication.composables.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -29,28 +30,35 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ni.gob.minsa.myapplication.composables.TaskStatusSelector
 import ni.gob.minsa.myapplication.data.TaskRepository
 
+@OptIn(
+    ExperimentalMaterial3Api::class)
 @Composable
-fun CreateTaskScreen(
+fun EditTaskScreen(
+    taskId: Long,
     onNavigateUp: () -> Unit,
     onSaved: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CreateTaskViewModel = viewModel { CreateTaskViewModel(TaskRepository) }
+    viewModel: EditTaskViewModel = viewModel { EditTaskViewModel(TaskRepository) }
 ) {
-    val title: String by viewModel.title.collectAsStateWithLifecycle()
+    val title by viewModel.title.collectAsStateWithLifecycle()
     val description by viewModel.description.collectAsStateWithLifecycle()
     val selectedStatus by viewModel.selectedStatus.collectAsStateWithLifecycle()
-    val enableSave by viewModel.saved.collectAsStateWithLifecycle()
+    val enableSave by viewModel.enableSave.collectAsStateWithLifecycle()
     val saved by viewModel.saved.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.setInitialData(taskId)
+    }
 
     LaunchedEffect(saved) {
         if (saved) onSaved()
     }
 
-    Scaffold (
+    Scaffold(
         modifier = modifier,
-        topBar =  {
+        topBar = {
             TopAppBar(
-                title = { Text(text = "Create New Task") },
+                title = { Text(text = "Edit Task") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
@@ -103,5 +111,4 @@ fun CreateTaskScreen(
             )
         }
     }
-
 }

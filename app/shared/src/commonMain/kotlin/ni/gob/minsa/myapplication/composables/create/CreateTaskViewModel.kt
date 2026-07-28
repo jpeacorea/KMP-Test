@@ -67,7 +67,7 @@ class CreateTaskViewModel(
      *
      * @param newStatus The new [TaskStatus] to be assigned to the task.
      */
-    fun onStatusChange(newStatus: TaskStatus) {
+    fun onSelectedStatusChange(newStatus: TaskStatus) {
         _selectedStatus.value = newStatus
     }
 

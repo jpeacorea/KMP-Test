@@ -1,5 +1,6 @@
 package ni.gob.minsa.myapplication.data
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,9 +16,8 @@ object TaskRepository {
     private val _tasks = MutableStateFlow(listOf<Task>())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
-    fun getTaskbyIdAsFlow(id: Long) {
+    fun getTaskByIdAsFlow(id: Long): Flow<Task?> =
         tasks.map { it.firstOrNull { task -> task.id == id } }
-    }
 
     fun getTaskByIdAsOneShot(id: Long): Task? {
         return tasks.value.firstOrNull { it.id == id }

@@ -1,48 +1,70 @@
 package ni.gob.minsa.myapplication
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import myapplication.app.shared.generated.resources.Res
-import myapplication.app.shared.generated.resources.compose_multiplatform
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import ni.gob.minsa.myapplication.composables.create.CreateTaskScreen
+import ni.gob.minsa.myapplication.composables.details.TaskDetailsScreen
+import ni.gob.minsa.myapplication.composables.edit.EditTaskScreen
+import ni.gob.minsa.myapplication.composables.home.HomeScreen
 
 @Composable
-@Preview
+fun AppTheme(content: @Composable () -> Unit) {
+    val isDark = isSystemInDarkTheme()
+    MaterialTheme(
+        colorScheme = if (isDark) {
+            darkColorScheme()
+        } else {
+            lightColorScheme()
+        },
+        content = content
+    )
+}
+
+@Composable
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+    AppTheme {
+        val navController = rememberNavController()
+
+        NavHost(navController = navController, startDestination = MainRoute.Home) {
+            composable<MainRoute.Home> {
+                HomeScreen(
+                    onCreateTask = { navController.navigate(MainRoute.Create) },
+                    onOpenTask = { navController.navigate(MainRoute.Details(it.id)) }
+                )
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
+            composable<MainRoute.Create> {
+                CreateTaskScreen(
+                    onNavigateUp = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() }
+                )
+            }
+            composable<MainRoute.Details> {
+                val taskId = it.toRoute<MainRoute.Details>().taskId
+                TaskDetailsScreen(
+                    taskId = taskId,
+                    onNavigateUp = { navController.popBackStack() },
+                    onEdit = { task ->
+                        navController.navigate(MainRoute.Edit(task.id))
+                    },
+                    onDeleted = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            composable<MainRoute.Edit> {
+                val taskId = it.toRoute<MainRoute.Edit>().taskId
+                EditTaskScreen(
+                    taskId = taskId,
+                    onNavigateUp = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() }
+                )
             }
         }
     }
